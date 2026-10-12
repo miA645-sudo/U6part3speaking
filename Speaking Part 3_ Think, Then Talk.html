@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Speaking Part 3: Think, Then Talk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #E8EFF5; --panel: #FFFFFF; --ink: #102A43; --muted: #486581; --line: #C6D4E1;
+    --accent: #1F5FAD; --accent-ink: #FFFFFF; --accent-soft: #D7E5F7;
+    --board: #14233A; --board-cell: #1F3352; --board-ink: #FFD15C; --board-sub: #9FB6D4;
+    --analyse: #0E7C86; --analyse-soft: #DAF1F2;
+    --both: #A3307A; --both-soft: #F6E1EF;
+    --opinion: #C2410C; --opinion-soft: #FDE7DA;
+    --ok: #1B864C; --bad: #C4303B; --hl: #FFE14D;
+    --shadow: 0 2px 0 rgba(16, 42, 67, 0.08);
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0D1626; --panel: #16233A; --ink: #EAF1F8; --muted: #9FB3C8; --line: #2A3B56;
+      --accent: #6FA8FF; --accent-ink: #0D1626; --accent-soft: #1B2F4F;
+      --board: #0A1220; --board-cell: #17263F;
+      --analyse: #3CC1CC; --analyse-soft: #0F2E31;
+      --both: #E07BBE; --both-soft: #34172A;
+      --opinion: #FF8A50; --opinion-soft: #3A1D0E;
+      --ok: #2FA866; --bad: #E2535D; --shadow: none; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0D1626; --panel: #16233A; --ink: #EAF1F8; --muted: #9FB3C8; --line: #2A3B56;
+    --accent: #6FA8FF; --accent-ink: #0D1626; --accent-soft: #1B2F4F;
+    --board: #0A1220; --board-cell: #17263F;
+    --analyse: #3CC1CC; --analyse-soft: #0F2E31;
+    --both: #E07BBE; --both-soft: #34172A;
+    --opinion: #FF8A50; --opinion-soft: #3A1D0E;
+    --ok: #2FA866; --bad: #E2535D; --shadow: none; color-scheme: dark;
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font-family: "Lexend", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; -webkit-font-smoothing: antialiased; overflow: hidden; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  button:focus-visible { outline: 4px solid var(--accent); outline-offset: 3px; }
+  kbd { font-family: inherit; font-weight: 600; border: 1.5px solid var(--line); border-bottom-width: 3px; border-radius: 6px; padding: 0 5px; background: var(--panel); }
+
+  .app { height: 100%; display: grid; grid-template-rows: auto minmax(0, 1fr); max-width: 1900px; margin: 0 auto; }
+
+  /* ---------- Header ---------- */
+  header { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: clamp(8px, 1.6vh, 18px) clamp(14px, 2.4vw, 40px) 0; }
+  .brand { flex: 1 1 0; min-width: 0; font-weight: 800; font-size: clamp(16px, min(1.5vw, 2.8vh), 26px); letter-spacing: -0.01em; white-space: nowrap; }
+  .brand span { color: var(--muted); font-weight: 500; }
+  .tabs { display: flex; gap: 8px; background: var(--panel); border: 2px solid var(--line); border-radius: 16px; padding: 5px; }
+  .tab { border: 0; background: transparent; border-radius: 11px; padding: 0.5em 1em; font-weight: 600; font-size: clamp(14px, min(1.25vw, 2.4vh), 21px); display: flex; align-items: center; gap: 0.5em; white-space: nowrap; color: var(--muted); }
+  .tab .n { width: 1.6em; height: 1.6em; border-radius: 50%; display: grid; place-items: center; background: var(--bg); font-weight: 800; font-size: 0.85em; }
+  .tab[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
+  .tab[aria-selected="true"] .n { background: var(--accent-ink); color: var(--accent); }
+  .head-actions { flex: 1 1 0; display: flex; justify-content: flex-end; }
+
+  .btn { border: 2px solid var(--line); background: var(--panel); border-radius: 14px; padding: 0.6em 1.15em; font-size: clamp(15px, min(1.35vw, 2.6vh), 24px); font-weight: 600; line-height: 1.1; box-shadow: var(--shadow); transition: transform 0.12s ease, border-color 0.2s ease; white-space: nowrap; }
+  .btn:hover:not(:disabled) { border-color: var(--accent); }
+  .btn:active:not(:disabled) { transform: translateY(1px); }
+  .btn:disabled { opacity: 0.35; cursor: default; }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .btn.dark { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .btn.big { font-size: clamp(18px, min(1.8vw, 3.3vh), 30px); padding: 0.65em 1.5em; border-radius: 16px; }
+  .btn.small { font-size: clamp(13px, min(1.1vw, 2.1vh), 18px); padding: 0.45em 0.85em; border-radius: 11px; }
+
+  .panel { display: none; min-height: 0; padding: clamp(10px, 2vh, 22px) clamp(14px, 2.4vw, 40px) clamp(10px, 2vh, 22px); gap: clamp(10px, 1.8vh, 20px) clamp(12px, 1.6vw, 24px); }
+  .card { background: var(--panel); border: 2px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); }
+  .label { font-weight: 700; color: var(--muted); font-size: clamp(13px, min(1.1vw, 2.1vh), 19px); }
+
+  /* ---------- Tab 1: Question detective ---------- */
+  #tab1.active { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); grid-template-areas: "intro side" "qs side"; }
+  .intro { grid-area: intro; display: flex; align-items: baseline; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+  .intro h2 { margin: 0; font-size: clamp(20px, min(2vw, 3.8vh), 36px); font-weight: 800; letter-spacing: -0.01em; }
+  .solved-count { font-weight: 700; color: var(--accent); font-size: clamp(15px, min(1.3vw, 2.5vh), 22px); white-space: nowrap; }
+  .qgrid { grid-area: qs; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 1.4vh, 16px) clamp(8px, 1.2vw, 16px); min-height: 0; }
+  .q { position: relative; display: flex; text-align: left; padding: 0; overflow: hidden; border-radius: 16px; background: var(--panel); border: 2px solid var(--line); box-shadow: var(--shadow); transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; min-height: 0; }
+  .q .stub { flex: 0 0 auto; width: clamp(44px, 4.2vw, 76px); display: grid; place-items: center; font-weight: 800; font-size: clamp(22px, min(2.2vw, 4.2vh), 40px); border-right: 3px dashed var(--line); background: var(--bg); transition: background-color 0.3s ease; }
+  .q .qt { align-self: center; padding: 0.55em 0.9em 1.6em; font-size: clamp(15px, min(1.4vw, 2.7vh), 30px); line-height: 1.35; font-weight: 500; }
+  .q.selected { border-color: var(--accent); box-shadow: 0 0 0 5px var(--accent-soft); transform: translateY(-2px); }
+  .sig { background-image: linear-gradient(var(--hl), var(--hl)); background-repeat: no-repeat; background-size: 0% 100%; border-radius: 0.2em; padding: 0 0.06em; -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: background-size 0.6s cubic-bezier(.6,.05,.3,1), color 0.3s ease; }
+  .q.selected .sig, .q.solved .sig { background-size: 100% 100%; color: #102A43; font-weight: 700; }
+  .stamp { position: absolute; right: 0.7em; bottom: 0.45em; transform: rotate(-8deg); border: 3px solid currentColor; border-radius: 8px; padding: 0.05em 0.5em; font-weight: 800; letter-spacing: 0.06em; font-size: clamp(12px, min(1vw, 1.9vh), 19px); opacity: 0; pointer-events: none; }
+  .q.solved .stamp { opacity: 0.95; animation: slam 0.45s cubic-bezier(.2,.9,.3,1.2) both; }
+  @keyframes slam { 0% { transform: rotate(-8deg) scale(2.6); opacity: 0; } 60% { transform: rotate(-8deg) scale(0.9); opacity: 1; } 100% { transform: rotate(-8deg) scale(1); } }
+  .q.solved.analyse { border-color: var(--analyse); } .q.solved.analyse .stub { background: var(--analyse-soft); } .q.analyse .stamp { color: var(--analyse); }
+  .q.solved.both { border-color: var(--both); } .q.solved.both .stub { background: var(--both-soft); } .q.both .stamp { color: var(--both); }
+  .q.solved.opinion { border-color: var(--opinion); } .q.solved.opinion .stub { background: var(--opinion-soft); } .q.opinion .stamp { color: var(--opinion); }
+  .shake { animation: shake 0.45s ease both; }
+  @keyframes shake { 0%, 100% { transform: none; } 20% { transform: translateX(-10px); } 40% { transform: translateX(9px); } 60% { transform: translateX(-6px); } 80% { transform: translateX(4px); } }
+
+  .side { grid-area: side; display: flex; flex-direction: column; gap: clamp(8px, 1.4vh, 16px); min-height: 0; }
+  .gtimer { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: clamp(8px, 1.4vh, 16px) clamp(12px, 1.2vw, 20px); }
+  .gtimer .time { font-weight: 800; font-size: clamp(28px, min(3vw, 5.6vh), 54px); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+  .gtimer .time.low { color: var(--bad); }
+  .gtimer .btns { display: flex; gap: 8px; }
+  .gates { flex: 1; display: flex; flex-direction: column; gap: clamp(8px, 1.4vh, 16px); min-height: 0; }
+  .gate { flex: 1; min-height: 0; display: grid; grid-template-columns: auto 1fr; column-gap: clamp(8px, 1vw, 16px); row-gap: 4px; align-items: center; align-content: center; text-align: left; border: 3px solid; border-radius: 16px; padding: clamp(6px, 1.2vh, 14px) clamp(10px, 1.2vw, 18px); transition: transform 0.15s ease; }
+  .gate:hover { transform: translateY(-2px); }
+  .gate .icon { font-size: clamp(30px, min(3vw, 5.6vh), 54px); line-height: 1; grid-row: span 2; }
+  .gate .gname { font-weight: 800; font-size: clamp(17px, min(1.6vw, 3vh), 30px); line-height: 1.15; }
+  .gate .gtip { font-size: clamp(14px, min(1.2vw, 2.3vh), 22px); line-height: 1.3; color: var(--ink); }
+  .gate.analyse { border-color: var(--analyse); background: var(--analyse-soft); } .gate.analyse .gname { color: var(--analyse); }
+  .gate.both { border-color: var(--both); background: var(--both-soft); } .gate.both .gname { color: var(--both); }
+  .gate.opinion { border-color: var(--opinion); background: var(--opinion-soft); } .gate.opinion .gname { color: var(--opinion); }
+  .side-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+
+  /* ---------- Tab 2: Thinking phrases ---------- */
+  #tab2.active { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto auto; }
+  .stage { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: clamp(10px, 2.4vh, 26px); padding: clamp(14px, 3vh, 36px) clamp(16px, 3vw, 48px); text-align: center; min-height: 0; overflow: hidden; }
+  .stage .rule { margin: 0; font-size: clamp(16px, min(1.5vw, 2.8vh), 26px); color: var(--muted); font-weight: 500; }
+  .stage .rule strong { color: var(--ink); }
+  .phrase { margin: 0; font-size: clamp(28px, min(4.3vw, 8vh), 78px); font-weight: 700; line-height: 1.25; letter-spacing: -0.015em; max-width: 26ch; }
+  .phrase.spinning { opacity: 0.55; filter: blur(1px); }
+  .phrase.land { animation: land 0.45s cubic-bezier(.2,.9,.3,1.3) both; }
+  @keyframes land { from { transform: scale(0.85); } to { transform: none; } }
+  .blank { display: inline-block; min-width: 4.6em; border-bottom: 0.08em solid var(--accent); color: transparent; text-align: center; line-height: 1.05; }
+  .blank.filled { color: var(--accent); animation: popIn 0.5s cubic-bezier(.2,.9,.3,1.4) both; }
+  @keyframes popIn { 0% { transform: scale(0.3); } 70% { transform: scale(1.18); } 100% { transform: none; } }
+  .rise { display: inline-block; width: 1.1em; height: 0.9em; vertical-align: -0.05em; margin-left: 0.15em; }
+  .rise path { stroke: var(--opinion); stroke-width: 9; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 140; stroke-dashoffset: 0; }
+  .rise.draw path { animation: draw 1.2s ease both; }
+  @keyframes draw { from { stroke-dashoffset: 140; } to { stroke-dashoffset: 0; } }
+  .stage-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .ptiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 1.2vh, 14px) clamp(8px, 1vw, 14px); }
+  .ptile { text-align: left; border: 2px solid var(--line); background: var(--panel); border-radius: 14px; padding: clamp(6px, 1.2vh, 14px) clamp(10px, 1vw, 16px); font-size: clamp(14px, min(1.25vw, 2.4vh), 22px); line-height: 1.3; display: flex; gap: 0.6em; align-items: baseline; box-shadow: var(--shadow); }
+  .ptile .n { font-weight: 800; color: var(--muted); }
+  .ptile b { color: var(--accent); }
+  .ptile.current { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+  .tips2 { text-align: center; margin: 0; font-size: 14px; color: var(--muted); }
+
+  /* ---------- Tab 3: Speaking practice ---------- */
+  #tab3.active { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; grid-template-areas: "round side" "board side" "picks side"; }
+  .round { grid-area: round; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .round .rtitle { font-weight: 800; font-size: clamp(20px, min(2vw, 3.8vh), 36px); }
+  .roles { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .role { font-size: clamp(14px, min(1.25vw, 2.4vh), 22px); font-weight: 600; padding: 0.3em 0.8em; border-radius: 999px; background: var(--panel); border: 2px solid var(--line); }
+  .role b { color: var(--accent); }
+  .board { grid-area: board; background: var(--board); border-radius: 20px; padding: clamp(12px, 2.4vh, 28px) clamp(14px, 2vw, 32px); display: flex; flex-direction: column; gap: clamp(8px, 1.6vh, 18px); min-height: 0; overflow: hidden; color: #FFFFFF; }
+  .board-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; color: var(--board-sub); font-weight: 600; font-size: clamp(13px, min(1.15vw, 2.2vh), 20px); }
+  .board-top .live { display: flex; align-items: center; gap: 8px; }
+  .board-top .live::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--board-ink); animation: blink 1.4s ease-in-out infinite; }
+  @keyframes blink { 50% { opacity: 0.25; } }
+  .flap { flex: 1; display: flex; align-items: center; min-height: 0; }
+  .flap-text { margin: 0; font-family: "JetBrains Mono", Consolas, Menlo, monospace; font-weight: 700; font-size: clamp(20px, min(2.8vw, 5.4vh), 56px); line-height: 1.55; color: var(--board-ink); }
+  .w { display: inline-block; white-space: nowrap; }
+  .ch { display: inline-block; width: 0.66em; text-align: center; background-color: var(--board-cell); background-image: linear-gradient(transparent 48%, rgba(0,0,0,0.5) 49%, rgba(0,0,0,0.5) 52%, transparent 53%); border-radius: 0.1em; margin: 0 0.03em; }
+  .badge { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: clamp(14px, min(1.25vw, 2.4vh), 22px); opacity: 0; transition: opacity 0.4s ease; }
+  .badge.show { opacity: 1; }
+  .chip { font-weight: 800; padding: 0.25em 0.75em; border-radius: 999px; }
+  .chip.analyse { background: var(--analyse); color: #FFFFFF; } .chip.both { background: var(--both); color: #FFFFFF; } .chip.opinion { background: var(--opinion); color: #FFFFFF; }
+  .badge .starter { color: var(--board-sub); }
+  .badge .starter i { color: #FFFFFF; font-style: normal; font-weight: 600; }
+  .picks { grid-area: picks; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .picks .nums { display: flex; gap: 6px; align-items: center; }
+  .num { width: clamp(34px, min(3vw, 5.6vh), 52px); height: clamp(34px, min(3vw, 5.6vh), 52px); border-radius: 11px; border: 2px solid var(--line); background: var(--panel); font-weight: 800; font-size: clamp(14px, min(1.3vw, 2.5vh), 22px); }
+  .num.used { background: var(--bg); color: var(--muted); text-decoration: line-through; }
+  .num.current { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); text-decoration: none; }
+  .side3 { grid-area: side; display: flex; flex-direction: column; gap: clamp(8px, 1.4vh, 16px); min-height: 0; }
+  .timer-card { display: flex; align-items: center; gap: clamp(10px, 1.4vw, 22px); padding: clamp(8px, 1.6vh, 18px) clamp(12px, 1.2vw, 20px); }
+  .ring { position: relative; width: clamp(110px, min(12vw, 24vh), 220px); aspect-ratio: 1; flex: 0 0 auto; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring .trk { stroke: var(--line); }
+  .ring .bar { stroke: var(--accent); transition: stroke 0.3s ease; }
+  .ring.low .bar { stroke: var(--bad); }
+  .ring .num-time { position: absolute; inset: 0; display: grid; place-items: center; font-weight: 800; font-size: clamp(28px, min(3.2vw, 6.2vh), 60px); font-variant-numeric: tabular-nums; }
+  .ring.low .num-time { color: var(--bad); }
+  .ring.over { animation: pulse 0.6s ease 3; }
+  @keyframes pulse { 50% { transform: scale(1.08); } }
+  .timer-ctrl { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+  .durs { display: flex; gap: 6px; }
+  .durs button { flex: 1; border: 2px solid var(--line); background: var(--panel); border-radius: 10px; padding: 0.35em 0.4em; font-weight: 700; font-size: clamp(13px, min(1.05vw, 2vh), 18px); }
+  .durs button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .checklist { padding: clamp(8px, 1.4vh, 16px) clamp(12px, 1.2vw, 20px); display: flex; flex-direction: column; gap: clamp(4px, 0.9vh, 10px); }
+  .checklist ol { margin: 0; padding-left: 1.4em; display: flex; flex-direction: column; gap: clamp(2px, 0.6vh, 8px); font-size: clamp(14px, min(1.25vw, 2.4vh), 22px); line-height: 1.3; font-weight: 500; }
+  .checklist ol li::marker { font-weight: 800; color: var(--accent); }
+  .tracker { flex: 1; min-height: 0; padding: clamp(8px, 1.4vh, 16px) clamp(12px, 1.2vw, 20px); display: flex; flex-direction: column; gap: clamp(6px, 1vh, 12px); overflow: auto; }
+  .tracker-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .pchips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pchip { border: 2px solid var(--line); background: var(--bg); border-radius: 999px; padding: 0.35em 0.8em; font-weight: 600; font-size: clamp(13px, min(1.3vw, 2.5vh), 22px); }
+  .pchip[aria-pressed="true"] { background: var(--ok); color: #FFFFFF; border-color: var(--ok); }
+  .pchip[aria-pressed="true"]::before { content: "✓ "; }
+
+  /* ---------- Toast ---------- */
+  .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 30px); background: var(--ink); color: var(--bg); font-weight: 700; padding: 0.7em 1.4em; border-radius: 14px; font-size: clamp(16px, min(1.5vw, 2.8vh), 26px); opacity: 0; pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease; z-index: 20; text-align: center; max-width: 90vw; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ---------- Portrait / small screens ---------- */
+  @media (max-width: 900px), (max-aspect-ratio: 1/1) {
+    body { overflow: auto; }
+    .app { height: auto; min-height: 100%; }
+    header { flex-wrap: wrap; }
+    .brand { flex-basis: 100%; order: 0; }
+    .tabs { order: 2; flex-basis: 100%; overflow-x: auto; }
+    .head-actions { order: 1; }
+    .tab .t { display: none; }
+    #tab1.active { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: "intro" "qs" "side"; }
+    .qgrid { grid-template-columns: 1fr; grid-template-rows: auto; }
+    .gate { min-height: 90px; }
+    #tab2.active { grid-template-rows: auto; }
+    .ptiles { grid-template-columns: 1fr; }
+    #tab3.active { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto; grid-template-areas: "round" "board" "picks" "side"; }
+    .board { min-height: 260px; }
+  }
+  @media (max-width: 1500px) and (min-aspect-ratio: 1/1) { .brand span { display: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0ms !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">Speaking Part 3 <span>Think, then talk</span></div>
+    <nav class="tabs" role="tablist" aria-label="Activities">
+      <button class="tab" role="tab" aria-selected="true" data-tab="1"><span class="n">1</span><span class="t">Question detective</span></button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="2"><span class="n">2</span><span class="t">Thinking phrases</span></button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="3"><span class="n">3</span><span class="t">Speaking practice</span></button>
+    </nav>
+    <div class="head-actions"><button class="btn small" id="soundBtn" aria-pressed="true">🔊 Sound on</button></div>
+  </header>
+
+  <!-- TAB 1 -->
+  <section class="panel active" id="tab1" role="tabpanel">
+    <div class="intro">
+      <h2>Find the signal words. What type of question is it?</h2>
+      <span class="solved-count" id="solvedCount">Solved 0 of 6</span>
+    </div>
+    <div class="qgrid" id="qgrid"></div>
+    <div class="side">
+      <div class="card gtimer">
+        <div><div class="label">Group work</div><div class="time" id="gTime">3:00</div></div>
+        <div class="btns"><button class="btn small primary" id="gStart">Start</button><button class="btn small" id="gReset">Reset</button></div>
+      </div>
+      <div class="gates" id="gates"></div>
+      <div class="side-foot"><span class="label">Click a question, then a type.</span><button class="btn small" id="qReset">Reset cards</button></div>
+    </div>
+  </section>
+
+  <!-- TAB 2 -->
+  <section class="panel" id="tab2" role="tabpanel">
+    <div class="card stage">
+      <p class="rule">Say it with a <strong>rising tone</strong>, then <strong>answer the question</strong>.</p>
+      <p class="phrase" id="phrase">Press <b>Spin</b> to choose a phrase</p>
+      <div class="stage-btns">
+        <button class="btn primary big" id="spinBtn">🎰 Spin</button>
+        <button class="btn big" id="fillBtn" disabled>Show the word</button>
+        <button class="btn big" id="melodyBtn" disabled>🎵 Hear the tone</button>
+      </div>
+    </div>
+    <div class="ptiles" id="ptiles"></div>
+    <p class="tips2">Use one phrase only, then start your answer. Don't use the same phrase again. &nbsp; <kbd>Space</kbd> spin or show the word &nbsp; <kbd>T</kbd> hear the tone</p>
+  </section>
+
+  <!-- TAB 3 -->
+  <section class="panel" id="tab3" role="tabpanel">
+    <div class="round">
+      <span class="rtitle" id="roundTitle">Round 1</span>
+      <div class="roles">
+        <span class="role" id="roleA"><b>Student A</b> asks</span>
+        <span class="role" id="roleB"><b>Student B</b> answers</span>
+        <button class="btn small" id="swapBtn">⇄ Swap roles</button>
+      </div>
+    </div>
+    <div class="board">
+      <div class="board-top"><span class="live" id="boardLabel">Now boarding</span><span id="boardNum"></span></div>
+      <div class="flap"><p class="flap-text" id="flap" aria-live="polite"></p></div>
+      <div class="badge" id="badge"></div>
+    </div>
+    <div class="picks">
+      <button class="btn primary big" id="newQ">✈️ New question</button>
+      <div class="nums" id="nums" aria-label="Choose a question"></div>
+    </div>
+    <div class="side3">
+      <div class="card timer-card">
+        <div class="ring" id="ring">
+          <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="trk" cx="60" cy="60" r="52" fill="none" stroke-width="11"/><circle class="bar" id="ringBar" cx="60" cy="60" r="52" fill="none" stroke-width="11" stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="0"/></svg>
+          <div class="num-time" id="sTime">40</div>
+        </div>
+        <div class="timer-ctrl">
+          <div class="label">Speaking time</div>
+          <div class="durs" id="durs"><button data-d="30" aria-pressed="false">30s</button><button data-d="40" aria-pressed="true">40s</button><button data-d="60" aria-pressed="false">60s</button></div>
+          <button class="btn primary" id="sStart">Start</button>
+          <button class="btn small" id="sReset">Reset</button>
+        </div>
+      </div>
+      <div class="card checklist">
+        <div class="label">Every answer needs</div>
+        <ol>
+          <li>A thinking phrase (a new one!)</li>
+          <li>An answer that fits the question type</li>
+          <li>A reason: <i>because…</i></li>
+        </ol>
+      </div>
+      <div class="card tracker">
+        <div class="tracker-head"><span class="label">Thinking phrases used</span><button class="btn small" id="clearChips">Clear</button></div>
+        <div class="pchips" id="pchips"></div>
+      </div>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function () {
+  /* ================= SOUND ================= */
+  var Snd = (function () {
+    var ctx = null, master = null, muted = false, nbuf = null;
+    function init() {
+      try {
+        if (!ctx) { var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return; ctx = new AC(); master = ctx.createGain(); master.gain.value = 0.6; master.connect(ctx.destination); }
+        if (ctx.state === "suspended") ctx.resume();
+      } catch (e) {}
+    }
+    function ok() { return ctx && !muted; }
+    function tone(f, at, d, type, v, f2) {
+      if (!ok()) return;
+      var t = ctx.currentTime + (at || 0), o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type || "sine"; o.frequency.setValueAtTime(f, t);
+      if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v || 0.2, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      o.connect(g); g.connect(master); o.start(t); o.stop(t + d + 0.05);
+    }
+    function noise(at, d, v, f1, f2) {
+      if (!ok()) return;
+      if (!nbuf) { nbuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate); var a = nbuf.getChannelData(0); for (var k = 0; k < a.length; k++) a[k] = Math.random() * 2 - 1; }
+      var t = ctx.currentTime + (at || 0), s = ctx.createBufferSource(); s.buffer = nbuf;
+      var bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.Q.value = 1.2; bp.frequency.setValueAtTime(f1, t); bp.frequency.exponentialRampToValueAtTime(f2, t + d);
+      var g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      s.connect(bp); bp.connect(g); g.connect(master); s.start(t, Math.random() * 0.5); s.stop(t + d + 0.05);
+    }
+    return {
+      init: init,
+      toggle: function () { muted = !muted; return muted; },
+      isMuted: function () { return muted; },
+      click: function () { tone(560, 0, 0.08, "sine", 0.12, 820); },
+      tab: function () { tone(440, 0, 0.1, "triangle", 0.14, 660); tone(880, 0.06, 0.12, "sine", 0.06); },
+      marker: function () { noise(0.02, 0.5, 0.18, 700, 3600); },
+      stamp: function () { tone(140, 0, 0.3, "sine", 0.55, 50); noise(0, 0.14, 0.25, 1800, 300); tone(988, 0.16, 0.18, "triangle", 0.16); tone(1319, 0.27, 0.4, "triangle", 0.16); },
+      wrong: function () { tone(220, 0, 0.18, "square", 0.09); tone(185, 0.2, 0.32, "square", 0.09); },
+      fanfare: function () {
+        tone(392, 0, 0.12, "square", 0.07); tone(523, 0.13, 0.12, "square", 0.07);
+        [523, 659, 784, 1047].forEach(function (f) { tone(f, 0.27, 1.0, "triangle", 0.12); });
+        noise(0.27, 1.0, 0.07, 3000, 8000);
+      },
+      spinTick: function () { tone(1400, 0, 0.03, "square", 0.05); },
+      land: function () { tone(523, 0, 0.12, "triangle", 0.2); tone(784, 0.1, 0.32, "triangle", 0.2); },
+      pop: function () { tone(380, 0, 0.15, "sine", 0.3, 1150); tone(1568, 0.1, 0.25, "sine", 0.06); },
+      melody: function (n) {
+        var t = 0;
+        for (var k = 0; k < n - 1; k++) { tone(k % 3 === 1 ? 247 : 220, t, 0.16, "triangle", 0.2); t += 0.17; }
+        tone(220, t, 0.55, "triangle", 0.22, 392);
+      },
+      chime: function () { tone(784, 0, 0.9, "sine", 0.22); tone(659, 0.32, 0.9, "sine", 0.22); tone(523, 0.64, 1.2, "sine", 0.22); },
+      clack: function () { noise(0, 0.035, 0.18, 2500, 1200); },
+      tick: function (hi) { tone(hi ? 1175 : 880, 0, 0.09, "square", hi ? 0.1 : 0.05); },
+      start: function () { tone(659, 0, 0.12, "triangle", 0.2); tone(988, 0.12, 0.25, "triangle", 0.2); },
+      timeUp: function () { [0, 0.28, 0.56].forEach(function (a) { tone(330, a, 0.22, "square", 0.12); tone(415, a, 0.22, "square", 0.08); }); },
+      coin: function () { tone(988, 0, 0.08, "square", 0.08); tone(1319, 0.08, 0.3, "square", 0.08); }
+    };
+  })();
+
+  /* ================= DATA ================= */
+  var TYPES = {
+    analyse: { icon: "🔍", name: "Analyse an issue", stamp: "ANALYSE", tip: "Explain how or why. Think about different people or places.", starter: "It depends on… For people who…, but…" },
+    both:    { icon: "⚖️", name: "Two sides", stamp: "TWO SIDES", tip: "Talk about the good points AND the bad points.", starter: "One big advantage is… On the other hand…" },
+    opinion: { icon: "💬", name: "Your opinion", stamp: "OPINION", tip: "Say what you think, then give a reason and an example.", starter: "Personally, I believe… because…" }
+  };
+  var QS = [
+    { t: "[[How easy]] is it to travel around your country?", k: "analyse" },
+    { t: "[[How can]] people [[benefit]] from travelling?", k: "analyse" },
+    { t: "What are the [[advantages and disadvantages]] of air travel?", k: "both" },
+    { t: "[[Is it important]] to know about other cultures?", k: "opinion" },
+    { t: "[[What does]] 'culture' [[mean for you]]?", k: "opinion" },
+    { t: "[[Do you think]] that learning a foreign language can help you understand another culture?", k: "opinion" }
+  ];
+  var PHRASES = [
+    { a: "Hmm, that's a really", w: "interesting", b: "question.", short: "interesting question" },
+    { a: "Well, it's difficult to say for", w: "sure", b: ", but I guess…", short: "for sure" },
+    { a: "Right, OK, let me think about that for a", w: "moment", b: ".", short: "for a moment" },
+    { a: "Well, let me see. I", w: "would", b: "say that…", short: "I would say" },
+    { a: "Hmm, now that is a", w: "hard", b: "one to answer.", short: "a hard one" },
+    { a: "I have never", w: "thought", b: "about that before.", short: "never thought" }
+  ];
+  function plain(s) { return s.replace(/\[\[|\]\]/g, ""); }
+  function sigMarkup(s) { return s.replace(/\[\[(.+?)\]\]/g, '<span class="sig">$1</span>'); }
+
+  var $ = function (id) { return document.getElementById(id); };
+  var toastTimer;
+  function toast(msg, ms) {
+    var t = $("toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove("show"); }, ms || 1800);
+  }
+  function shake(el) { el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake"); }
+
+  /* ================= TABS ================= */
+  var currentTab = 1;
+  function showTab(n) {
+    currentTab = n;
+    document.querySelectorAll(".tab").forEach(function (b) { b.setAttribute("aria-selected", String(Number(b.dataset.tab) === n)); });
+    [1, 2, 3].forEach(function (k) { $("tab" + k).classList.toggle("active", k === n); });
+  }
+  document.querySelectorAll(".tab").forEach(function (b) {
+    b.addEventListener("click", function () { Snd.tab(); showTab(Number(b.dataset.tab)); });
+  });
+
+  /* ================= TIMER ================= */
+  function Timer(opts) {
+    this.dur = opts.dur; this.left = opts.dur; this.running = false; this.opts = opts; this.lastSec = Math.ceil(opts.dur); this.raf = null;
+    opts.render(this.left, this.dur);
+  }
+  Timer.prototype.start = function () {
+    if (this.running || this.left <= 0) return;
+    this.running = true; this.t0 = performance.now(); this.base = this.left;
+    var self = this;
+    var loop = function (now) {
+      if (!self.running) return;
+      self.left = Math.max(0, self.base - (now - self.t0) / 1000);
+      var sec = Math.ceil(self.left);
+      if (sec !== self.lastSec) { self.lastSec = sec; if (self.opts.onSecond) self.opts.onSecond(sec); }
+      self.opts.render(self.left, self.dur);
+      if (self.left <= 0) { self.running = false; self.opts.onEnd(); self.opts.onState(false); return; }
+      self.raf = requestAnimationFrame(loop);
+    };
+    this.raf = requestAnimationFrame(loop);
+    this.opts.onState(true);
+  };
+  Timer.prototype.pause = function () { this.running = false; cancelAnimationFrame(this.raf); this.opts.onState(false); };
+  Timer.prototype.toggle = function () { if (this.running) this.pause(); else this.start(); };
+  Timer.prototype.reset = function (dur) { this.pause(); if (dur) this.dur = dur; this.left = this.dur; this.lastSec = Math.ceil(this.dur); this.opts.render(this.left, this.dur); };
+
+  /* ================= TAB 1 ================= */
+  var selected = -1, solved = QS.map(function () { return false; });
+  var qgrid = $("qgrid");
+  QS.forEach(function (q, n) {
+    var b = document.createElement("button");
+    b.className = "q " + q.k;
+    b.innerHTML = '<span class="stub">' + (n + 1) + '</span><span class="qt">' + sigMarkup(q.t) + '</span><span class="stamp">' + TYPES[q.k].stamp + "</span>";
+    b.addEventListener("click", function () { selectQ(n); });
+    qgrid.appendChild(b);
+  });
+  var gates = $("gates");
+  Object.keys(TYPES).forEach(function (k) {
+    var g = document.createElement("button");
+    g.className = "gate " + k; g.dataset.k = k;
+    g.innerHTML = '<span class="icon" aria-hidden="true">' + TYPES[k].icon + '</span><span class="gname">' + TYPES[k].name + '</span><span class="gtip">' + TYPES[k].tip + "</span>";
+    g.addEventListener("click", function () { chooseType(k, g); });
+    gates.appendChild(g);
+  });
+  function selectQ(n) {
+    if (solved[n]) { Snd.click(); return; }
+    selected = n;
+    Array.prototype.forEach.call(qgrid.children, function (c, m) { c.classList.toggle("selected", m === n); });
+    Snd.marker();
+  }
+  function chooseType(k, gateEl) {
+    if (selected < 0) { Snd.wrong(); toast("Click a question first."); return; }
+    var card = qgrid.children[selected];
+    if (QS[selected].k === k) {
+      solved[selected] = true;
+      card.classList.remove("selected"); card.classList.add("solved");
+      card.querySelector(".stub").textContent = TYPES[k].icon;
+      Snd.stamp();
+      selected = -1;
+      updateSolved();
+    } else {
+      Snd.wrong(); shake(card); shake(gateEl);
+      toast("Not this one. Look at the signal words again!");
+    }
+  }
+  function updateSolved() {
+    var c = solved.filter(Boolean).length;
+    $("solvedCount").textContent = "Solved " + c + " of 6";
+    if (c === QS.length) { setTimeout(function () { Snd.fanfare(); toast("🕵️ Case closed! Questions 1 and 2 ask you to analyse an issue.", 4200); }, 500); gTimer.pause(); }
+  }
+  $("qReset").addEventListener("click", function () {
+    Snd.click(); selected = -1; solved = QS.map(function () { return false; });
+    Array.prototype.forEach.call(qgrid.children, function (c, n) { c.classList.remove("solved", "selected"); c.querySelector(".stub").textContent = n + 1; });
+    updateSolved();
+  });
+  var gTimer = new Timer({
+    dur: 180,
+    render: function (left) {
+      var s = Math.ceil(left), m = Math.floor(s / 60), r = s % 60;
+      var el = $("gTime"); el.textContent = m + ":" + (r < 10 ? "0" : "") + r; el.classList.toggle("low", s <= 10);
+    },
+    onSecond: function (s) { if (s <= 10 && s > 0) Snd.tick(s <= 3); },
+    onEnd: function () { Snd.timeUp(); toast("⏰ Time's up! Let's check the answers."); },
+    onState: function (on) { $("gStart").textContent = on ? "Pause" : "Start"; }
+  });
+  $("gStart").addEventListener("click", function () { if (!gTimer.running) Snd.start(); gTimer.toggle(); });
+  $("gReset").addEventListener("click", function () { Snd.click(); gTimer.reset(); });
+
+  /* ================= TAB 2 ================= */
+  var curP = -1, filled = PHRASES.map(function () { return false; }), spinning = false;
+  var ptiles = $("ptiles");
+  PHRASES.forEach(function (p, n) {
+    var b = document.createElement("button");
+    b.className = "ptile";
+    b.addEventListener("click", function () { if (!spinning) { Snd.click(); showPhrase(n, false); } });
+    ptiles.appendChild(b);
+  });
+  function renderTiles() {
+    Array.prototype.forEach.call(ptiles.children, function (b, n) {
+      var p = PHRASES[n];
+      b.innerHTML = '<span class="n">' + (n + 1) + '</span><span>' + p.a + " " + (filled[n] ? "<b>" + p.w + "</b>" : "_____") + (p.b.charAt(0) === "," || p.b === "." ? "" : " ") + p.b + "</span>";
+      b.classList.toggle("current", n === curP);
+    });
+  }
+  function phraseHTML(n, reveal) {
+    var p = PHRASES[n], gap = (p.b.charAt(0) === "," || p.b === ".") ? "" : " ";
+    return p.a + ' <span class="blank' + (reveal ? " filled" : "") + '">' + p.w + "</span>" + gap + p.b +
+      '<svg class="rise" viewBox="0 0 60 50" aria-hidden="true"><path d="M5 42 H24 Q40 42 50 12 M38 14 L51 9 L54 23"/></svg>';
+  }
+  function showPhrase(n, land) {
+    curP = n;
+    var el = $("phrase");
+    el.classList.remove("spinning");
+    el.innerHTML = phraseHTML(n, filled[n]);
+    if (land) { el.classList.remove("land"); void el.offsetWidth; el.classList.add("land"); }
+    $("fillBtn").disabled = filled[n];
+    $("melodyBtn").disabled = false;
+    renderTiles();
+  }
+  function spin() {
+    if (spinning) return;
+    spinning = true;
+    var pool = []; PHRASES.forEach(function (_, n) { if (!filled[n] && n !== curP) pool.push(n); });
+    if (!pool.length) PHRASES.forEach(function (_, n) { if (n !== curP) pool.push(n); });
+    var target = pool[Math.floor(Math.random() * pool.length)];
+    var el = $("phrase"), steps = 16, k = 0, idx = Math.floor(Math.random() * PHRASES.length);
+    $("fillBtn").disabled = true; $("melodyBtn").disabled = true;
+    (function step() {
+      if (k < steps) {
+        idx = (idx + 1) % PHRASES.length;
+        var p = PHRASES[idx];
+        el.classList.add("spinning");
+        el.textContent = p.a + " ____ " + p.b;
+        Snd.spinTick();
+        k++;
+        setTimeout(step, 50 + k * k * 1.3);
+      } else {
+        spinning = false;
+        Snd.land();
+        showPhrase(target, true);
+      }
+    })();
+  }
+  function fillWord() {
+    if (curP < 0 || filled[curP] || spinning) return;
+    filled[curP] = true;
+    var b = document.querySelector("#phrase .blank");
+    if (b) { b.classList.add("filled"); }
+    Snd.pop();
+    $("fillBtn").disabled = true;
+    renderTiles();
+    if (filled.every(Boolean)) setTimeout(function () { Snd.fanfare(); toast("🎉 All 6 phrases complete!"); }, 400);
+  }
+  function melody() {
+    if (curP < 0 || spinning) return;
+    var p = PHRASES[curP];
+    var words = (p.a + " " + p.w + " " + p.b).replace(/[^A-Za-z' ]/g, " ").trim().split(/\s+/).length;
+    Snd.melody(Math.min(words, 9));
+    var r = document.querySelector("#phrase .rise");
+    if (r) { r.classList.remove("draw"); void r.getBoundingClientRect(); r.classList.add("draw"); }
+  }
+  $("spinBtn").addEventListener("click", spin);
+  $("fillBtn").addEventListener("click", fillWord);
+  $("melodyBtn").addEventListener("click", melody);
+  renderTiles();
+
+  /* ================= TAB 3 ================= */
+  var round = 1, aAsks = true, curQ = -1, used = QS.map(function () { return false; }), flapTimer = null;
+  var nums = $("nums");
+  QS.forEach(function (_, n) {
+    var b = document.createElement("button");
+    b.className = "num"; b.textContent = n + 1; b.setAttribute("aria-label", "Question " + (n + 1));
+    b.addEventListener("click", function () { pickQ(n); });
+    nums.appendChild(b);
+  });
+  var pchips = $("pchips");
+  PHRASES.forEach(function (p) {
+    var c = document.createElement("button");
+    c.className = "pchip"; c.textContent = p.short; c.setAttribute("aria-pressed", "false");
+    c.addEventListener("click", function () {
+      var on = c.getAttribute("aria-pressed") !== "true";
+      c.setAttribute("aria-pressed", String(on));
+      if (on) Snd.coin(); else Snd.click();
+    });
+    pchips.appendChild(c);
+  });
+  $("clearChips").addEventListener("click", function () { Snd.click(); pchips.querySelectorAll(".pchip").forEach(function (c) { c.setAttribute("aria-pressed", "false"); }); });
+
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var SCR = "ABCDEFGHIJKLMNOPQRSTUVWXYZ?!";
+  function flapTo(text, done) {
+    clearInterval(flapTimer);
+    var host = $("flap"); host.innerHTML = "";
+    var cells = [];
+    text.split(" ").forEach(function (word, wi) {
+      if (wi) host.appendChild(document.createTextNode(" "));
+      var w = document.createElement("span"); w.className = "w";
+      word.split("").forEach(function (ch) {
+        var c = document.createElement("span"); c.className = "ch"; c.textContent = reduce ? ch : SCR[Math.floor(Math.random() * SCR.length)];
+        w.appendChild(c); cells.push({ el: c, ch: ch, at: 3 + Math.floor(Math.random() * 9) + Math.floor(cells.length * 0.28) });
+      });
+      host.appendChild(w);
+    });
+    host.setAttribute("aria-label", text);
+    if (reduce) { if (done) done(); return; }
+    var tick = 0;
+    flapTimer = setInterval(function () {
+      tick++;
+      var left = 0;
+      cells.forEach(function (c) {
+        if (tick >= c.at) { if (c.el.textContent !== c.ch) c.el.textContent = c.ch; }
+        else { left++; c.el.textContent = SCR[Math.floor(Math.random() * SCR.length)]; }
+      });
+      if (tick % 2 === 0 && left) Snd.clack();
+      if (!left) { clearInterval(flapTimer); if (done) done(); }
+    }, 45);
+  }
+  function renderNums() {
+    Array.prototype.forEach.call(nums.children, function (b, n) {
+      b.classList.toggle("used", used[n] && n !== curQ);
+      b.classList.toggle("current", n === curQ);
+    });
+  }
+  function pickQ(n) {
+    curQ = n; used[n] = true;
+    renderNums();
+    sTimer.reset();
+    var badge = $("badge"); badge.classList.remove("show");
+    $("boardNum").textContent = "Question " + (n + 1);
+    $("boardLabel").textContent = "Now boarding";
+    Snd.chime();
+    setTimeout(function () {
+      flapTo(plain(QS[n].t), function () {
+        var T = TYPES[QS[n].k];
+        badge.innerHTML = '<span class="chip ' + QS[n].k + '">' + T.icon + " " + T.name + '</span><span class="starter">Try: <i>' + T.starter + "</i></span>";
+        badge.classList.add("show");
+      });
+    }, reduce ? 0 : 700);
+  }
+  function newQ() {
+    var pool = []; used.forEach(function (u, n) { if (!u) pool.push(n); });
+    if (!pool.length) { used = QS.map(function () { return false; }); used.forEach(function (_, n) { if (n !== curQ) pool.push(n); }); toast("All 6 questions used. Starting again!"); }
+    if (curQ >= 0) { round++; $("roundTitle").textContent = "Round " + round; }
+    pickQ(pool[Math.floor(Math.random() * pool.length)]);
+  }
+  function swapRoles() {
+    aAsks = !aAsks; Snd.click();
+    $("roleA").innerHTML = "<b>Student A</b> " + (aAsks ? "asks" : "answers");
+    $("roleB").innerHTML = "<b>Student B</b> " + (aAsks ? "answers" : "asks");
+    [$("roleA"), $("roleB")].forEach(shake);
+  }
+  var CIRC = 326.73, curDur = 40;
+  var sTimer = new Timer({
+    dur: 40,
+    render: function (left, dur) {
+      var s = Math.ceil(left);
+      $("sTime").textContent = left <= 0 ? "Time!" : s;
+      $("ringBar").setAttribute("stroke-dashoffset", String(CIRC * (1 - left / dur)));
+      $("ring").classList.toggle("low", left > 0 && s <= 5 || left <= 0);
+    },
+    onSecond: function (s) { if (s <= 5 && s > 0) Snd.tick(s <= 2); },
+    onEnd: function () { Snd.timeUp(); var r = $("ring"); r.classList.remove("over"); void r.offsetWidth; r.classList.add("over"); },
+    onState: function (on) { $("sStart").textContent = on ? "Pause" : "Start"; }
+  });
+  $("sStart").addEventListener("click", function () { if (!sTimer.running) Snd.start(); sTimer.toggle(); });
+  $("sReset").addEventListener("click", function () { Snd.click(); sTimer.reset(); });
+  document.querySelectorAll("#durs button").forEach(function (b) {
+    b.addEventListener("click", function () {
+      curDur = Number(b.dataset.d); Snd.click();
+      document.querySelectorAll("#durs button").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); });
+      sTimer.reset(curDur);
+    });
+  });
+  $("newQ").addEventListener("click", newQ);
+  $("swapBtn").addEventListener("click", swapRoles);
+  $("flap").textContent = "";
+  flapTo("Press New question to start", null);
+
+  /* ================= SOUND TOGGLE + KEYS ================= */
+  function toggleSound() {
+    Snd.init(); var m = Snd.toggle();
+    $("soundBtn").textContent = m ? "🔇 Sound off" : "🔊 Sound on";
+    $("soundBtn").setAttribute("aria-pressed", String(!m));
+    if (!m) Snd.coin();
+  }
+  $("soundBtn").addEventListener("click", toggleSound);
+  document.addEventListener("pointerdown", Snd.init);
+  document.addEventListener("keydown", function (e) {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    Snd.init();
+    var k = e.key;
+    if (k === "1" || k === "2" || k === "3") { Snd.tab(); showTab(Number(k)); return; }
+    if (k === "m" || k === "M") { toggleSound(); return; }
+    var space = k === " " || e.code === "Space";
+    if (currentTab === 1 && space) { e.preventDefault(); if (!gTimer.running) Snd.start(); gTimer.toggle(); }
+    else if (currentTab === 2) {
+      if (space) { e.preventDefault(); if (curP >= 0 && !filled[curP] && !spinning) fillWord(); else spin(); }
+      else if (k === "t" || k === "T") melody();
+    }
+    else if (currentTab === 3) {
+      if (space) { e.preventDefault(); if (!sTimer.running) Snd.start(); sTimer.toggle(); }
+      else if (k === "n" || k === "N") newQ();
+      else if (k === "r" || k === "R") swapRoles();
+    }
+  });
+})();
+</script>
+</body>
+</html>
